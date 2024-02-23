@@ -1,0 +1,25 @@
+version: '3.2'
+services:
+  database:
+    image: postgres:latest
+    container_name: my_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: bnz
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: main_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+
+      
+  app:
+    build: 
+      context: ./python
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+
