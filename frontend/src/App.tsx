@@ -32,17 +32,6 @@ function App() {
       </header>
       <main className="bg-gray-900 min-h-screen flex flex-col items-center justify-center text-white">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
         <section className="flex gap-5 m-5">
           <Button onClick={showPlatform} title={"Показать платформу"}></Button>
           <Button onClick={onClick} title={"Узнать платформу"}></Button>
