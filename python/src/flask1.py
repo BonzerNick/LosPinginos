@@ -1,8 +1,10 @@
 import psycopg2
 from connection_config import connection_params
 from flask import Flask, Response, jsonify, request
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route(

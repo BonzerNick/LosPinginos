@@ -17,4 +17,12 @@ services:
       timeout: 5s
       retries: 5
 
-      
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      database:
+        condition: service_healthy 
