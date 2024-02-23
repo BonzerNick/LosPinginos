@@ -31,4 +31,5 @@ COPY src src
 COPY entrypoint.sh entrypoint.sh
 
 ENTRYPOINT ["sh", "entrypoint.sh"]
-CMD ["src/check_connection.py"]
+#CMD ["src/check_connection.py"]
+CMD ["src/flask1.py"]
