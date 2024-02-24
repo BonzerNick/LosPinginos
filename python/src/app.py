@@ -41,7 +41,7 @@ async def register(data=Body()):
     # Хэширование пароля
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     response = requests.post(
-        url="http://10.124.20.57:4000/api/v1/admin/users",
+        url="http://127.0.0.1:4000/api/v1/admin/users",
         json={
             "email": email,
             "full_name": username,
@@ -203,6 +203,82 @@ async def user_courses(request: Request):
 # @app.post("/user/add2course/<course-name>")
 # async def root():
 #     return "Fuck you!"
+
+
+@app.post("/user/add2course/{course_id}")
+async def add2course(course_id: str, request: Request):
+    print(course_id)
+    session_key = request.headers["session_key"]
+    user = user_sessions.get(session_key)
+    if not user:
+        return {"message": "no permissions"}
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO usercourses " "(user_id, course_id) " "VALUES (%s, %s)",
+            (user.user_id, course_id),
+        )
+    return {"message": "ok"}
+
+
+@app.post("/create_repo/{task_course_id}")
+async def create_repo(task_course_id: str, request: Request):
+    session_key = request.headers["session_key"]
+    user = user_sessions.get(session_key)
+    if not user:
+        return {"message": "no permissions"}
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT login FROM client WHERE id = %s",
+            (user.user_id,),
+        )
+        login = cursor.fetchone()[0]
+    response = requests.post(
+        # url = url,
+        url=f"http://127.0.0.1:4000/api/v1/admin/users/{login}/repos",
+        json={
+            "template": True,
+            "name": task_course_id + "_" + login,
+        },
+        headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
+    )
+    print(response.status_code)
+    return response.json()
+
+
+@app.post("/create_repo_with_template/{template_repo}")
+async def create_repo(template_repo: str, request: Request):
+    session_key = request.headers["session_key"]
+    user = user_sessions.get(session_key)
+    if not user:
+        return {"message": "no permissions"}
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT login FROM client WHERE id = %s",
+            (user.user_id,),
+        )
+        login = cursor.fetchone()[0]
+        #####################
+
+    template_owner = template_repo.split("_")[2:]
+    template_owner = "_".join(template_owner)
+    print(template_owner)
+    #####################
+    response = requests.post(
+        # url = url,
+        url=f"http://127.0.0.1:4000/api/v1/repos/{template_owner}/{template_repo}/generate",
+        json={
+            "name": template_repo + login,
+            "owner": login,
+            "git_content": True,
+        },
+        headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
+    )
+    print(response.text)
+    print(response.status_code)
+    return {"message": "ok"}
 
 
 uvicorn.run(app, host="0.0.0.0")
