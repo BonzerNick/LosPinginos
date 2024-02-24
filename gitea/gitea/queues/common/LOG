@@ -1,6 +1,0 @@
-=============== Feb 24, 2024 (+04) ===============
-13:14:42.794096 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-13:14:42.805129 db@open opening
-13:14:42.805754 version@stat F·[] S·0B[] Sc·[]
-13:14:42.806628 db@janitor F·2 G·0
-13:14:42.806654 db@open done T·1.488667ms
