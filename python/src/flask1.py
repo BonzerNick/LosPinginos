@@ -90,14 +90,14 @@ async def login(data=Body()):
             session_key = str(uuid.uuid4())
             user_sessions[session_key] = User(role=role, user_id=user_id)
             conn.commit()
-            return {"key": session_key}
+            return {"session_key": session_key}
         else:
             return {"message": "wrong login or password"}
 
 
 @app.post("/logout")
 async def logout(request: Request):
-    session_key = request.headers["key"]
+    session_key = request.headers["session_key"]
     del user_sessions[session_key]
     return {"message": "ok"}
 
@@ -137,7 +137,7 @@ async def create_git_user(data=Body()):
 @app.post("/teacher/create-course")
 async def create_course(request: Request):
     print(user_sessions)
-    session_key = request.headers["key"]
+    session_key = request.headers["session_key"]
     data = await request.json()
     print(session_key)
     user = user_sessions.get(session_key)
@@ -155,6 +155,33 @@ async def create_course(request: Request):
         course_id = cursor.fetchone()[0]
         return {'id': course_id}
 
+
+@app.post("/user/courses")
+async def user_courses(request: Request):
+    session_key = request.headers["session_key"]
+    user = user_sessions.get(session_key)
+    if not user or user.role != "teacher":
+        return {'message': 'no permissions'}
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT FROM course "
+            "id, title, description, thumbnail "
+            "where author_id = %s",
+            (user.user_id,)
+        )
+        courses = []
+        for course_info in cursor.fetchall():
+            course_id, title, description, thumbnail = course_info
+            courses.append(
+                {
+                    "id": course_id,
+                    "thumbnail": thumbnail,
+                    "title": title,
+                    "desc": description
+                }
+            )
+        return courses
 
 uvicorn.run(app, host='0.0.0.0')
 
