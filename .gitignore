@@ -7,6 +7,8 @@ __pycache__/
 *.so
 
 pgdata
+postgres/
+gitea/
 
 # Distribution / packaging
 .Python
