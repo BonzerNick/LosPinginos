@@ -3,29 +3,31 @@ import requests
 import psycopg2
 from connection_config import connection_params
 import hashlib
-from fastapi import Body, FastAPI
+from fastapi import Body, FastAPI, Header, Request
 import uvicorn
 
 
 app = FastAPI()
 
+user_sessions = {}
 
-@app.post("/register")
+
+@app.post("/signup")
 async def register(data=Body()):
     # Получение данных из запроса
     # Проверка наличия необходимых данных в запросе
-    if 'username' not in data or 'password' not in data or (
-            'email' not in data
+    if 'login' not in data or 'password' not in data or (
+            'email' not in data or 'role' not in data
     ):
-        return {'error': 'Missing username, password or email', 'code': 400}
+        return {'message': 'Missing username, password, email or role'}
 
     # Получение имени пользователя и пароля из запроса
-    username = data['username']
+    username = data['login']
     password = data['password']
     email = data['email']
+    role = data['role']
     if len(password) < 8:
-        return {'error': 'Pass len less than 8 symbols', 'code': 400}
-    user_id = str(uuid.uuid4())
+        return {'message': 'Pass len less than 8 symbols'}
     # Хэширование пароля
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     response = requests.post(
@@ -48,9 +50,10 @@ async def register(data=Body()):
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO clients (login, client_pass, status, client_key) "
-            "VALUES (%s, %s, 1, %s)",
-            (username, hashed_password, user_id)
+            "INSERT INTO client "
+            "(login, password, role, email) "
+            "VALUES (%s, %s, %s, %s)",
+            (response.json()['login'], hashed_password, role, email)
         )
         return {
             'message': 'User registered successfully',
@@ -61,24 +64,36 @@ async def register(data=Body()):
 # Эндпоинт для входа пользователя
 @app.post("/login")
 async def login(data=Body()):
-    if 'username' not in data or 'password' not in data:
-        return {'error': 'Missing username or password', 'code': 400}
+    if 'login' not in data or 'password' not in data:
+        return {'message': 'Missing username or password'}
 
-    username = data['username']
+    username = data['login']
     password = data['password']
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     # Поиск пользователя в базе данных
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT login, client_key FROM clients "
-            "WHERE login = %s and client_pass = %s",
+            "SELECT role FROM client "
+            "WHERE login = %s and password = %s",
             (username, hashed_password)
         )
-        user, client_key = cursor.fetchone()
-        conn.commit()
-        return {'message': 'Logged in successfully',
-                'username': username, "key": client_key, 'code': 200}
+        role = cursor.fetchone()
+        if role:
+            session_key = str(uuid.uuid4())
+            user_sessions[session_key] = role
+            conn.commit()
+            return {"key": session_key}
+        else:
+            return {"message": "wrong login or password"}
+
+
+@app.post("/logout")
+async def logout(request: Request):
+    session_key = request.headers["key"]
+    print(session_key)
+    del user_sessions[session_key]
+    return {"message": "ok"}
 
 
 @app.post("/create-git-user")
