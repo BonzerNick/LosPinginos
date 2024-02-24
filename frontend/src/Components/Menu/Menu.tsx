@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import CoursePanel from "./Course Panel/CoursePanel"; // Assuming the file path is correct
 import { ICourse } from "../dto/interfaces";
+import { EffectSection } from "../EffectSection";
 
 interface TableOfCoursesProps {
   courses: ICourse[];
@@ -20,6 +21,8 @@ const CourseTabMenu = ({ courses }: TableOfCoursesProps) => {
     setSearchQuery(event.target.value);
   };
 
+  //   const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div>
       <div className="mt-4">
@@ -33,7 +36,13 @@ const CourseTabMenu = ({ courses }: TableOfCoursesProps) => {
       </div>
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredCourses.map((course, index) => (
-          <CoursePanel key={index} course={course} courseClick={() => {}} />
+          <CoursePanel
+            key={index}
+            course={course}
+            courseClick={() => {
+              console.log(`${course.id} click`);
+            }}
+          />
         ))}
       </div>
     </div>

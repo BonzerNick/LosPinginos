@@ -1,26 +1,24 @@
 import "./App.css";
-import { Button } from "./Components/Buttons";
 import { useState } from "react";
 import { API } from "./Components/api/api";
 import { Header } from "./Components/Menu/Header";
-import TableOfCourses from "./Components/Menu/Course Panel/TableCourses";
 import CourseTabMenu from "./Components/Menu/Menu";
+import { v4 as uuidv4 } from "uuid";
+import { EffectSection } from "./Components/EffectSection";
+import { PRESETS_MODAL_STATES } from "./Components/dto/interfaces";
 
 function App() {
-  const [show, setShow] = useState(false);
-  const [plarform, SetPlatform] = useState("Unknown");
+  const [modalState, setModalState] = useState<PRESETS_MODAL_STATES>(
+    PRESETS_MODAL_STATES.HIDE
+  );
 
-  const showPlatform = () => {
-    setShow((prev) => !prev);
+  const openModal = (title: string, state: PRESETS_MODAL_STATES) => {
+    setModalState(state);
+
+    // setModalTitle(title);
   };
-
-  const onClick = async () => {
-    try {
-      const response = await API.getPlatform(10);
-      SetPlatform(response.data);
-    } catch (error) {
-      alert(error);
-    }
+  const closeModal = () => {
+    setModalState(PRESETS_MODAL_STATES.HIDE);
   };
 
   const onAddClick = () => {
@@ -44,15 +42,56 @@ function App() {
           {/* <TableOfCourses */}
           <CourseTabMenu
             courses={[
-              { id: 12, title: "Aboba1", desc: "desc", thumbnail: "https://" },
-              { id: 12, title: "Aboba2", desc: "desc", thumbnail: "https://" },
-              { id: 12, title: "Aboba3", desc: "desc", thumbnail: "https://" },
-              { id: 12, title: "Aboba4", desc: "desc", thumbnail: "https://" },
-              { id: 12, title: "Aboba5", desc: "desc", thumbnail: "https://" },
-              { id: 12, title: "Aboba6", desc: "desc", thumbnail: "https://" },
+              {
+                id: uuidv4(),
+                title: "Aboba1",
+                desc: "desc",
+                thumbnail: "https://",
+              },
+              {
+                id: uuidv4(),
+                title: "Aboba2",
+                desc: "desc",
+                thumbnail: "https://",
+              },
+              {
+                id: uuidv4(),
+                title: "Aboba3",
+                desc: "desc",
+                thumbnail: "https://",
+              },
+              {
+                id: uuidv4(),
+                title: "Aboba4",
+                desc: "desc",
+                thumbnail: "https://",
+              },
+              {
+                id: uuidv4(),
+                title: "Aboba5",
+                desc: "desc",
+                thumbnail: "https://",
+              },
+              {
+                id: uuidv4(),
+                title: "Aboba6",
+                desc: "desc",
+                thumbnail: "https://",
+              },
             ]}
           ></CourseTabMenu>
         </section>
+        <EffectSection
+          open={modalState !== PRESETS_MODAL_STATES.HIDE}
+          close={closeModal}
+        >
+          {<div> ABOBA</div>}
+        </EffectSection>
+        <button
+          onClick={() => openModal("Hello", PRESETS_MODAL_STATES.SIGN_UP)}
+        >
+          SIGN UP
+        </button>
         {/* <section className="flex gap-5 m-5">
           <Button onClick={showPlatform} title={"Показать платформу"}></Button>
           <Button onClick={onClick} title={"Узнать платформу"}></Button>
