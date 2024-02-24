@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { IAuth, User } from "../dto/interfaces";
+import { API } from "../api/api";
 
-export function Login({ close }: IAuth) {
+export function Login({ close, setSession }: IAuth) {
   const [user, setUser] = useState<User>({ username: "", password: "" });
   const [error, setError] = useState<string>("");
 
@@ -13,15 +14,27 @@ export function Login({ close }: IAuth) {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user.username.trim() || !user.password.trim()) {
       setError("Please enter both username and password.");
       return;
     }
-    console.log("Login details:", user);
-    close();
-    setError(""); // Clear error message on successful submission
+    try {
+      const response = await API.login(user);
+      console.log(response);
+      if (response.status === 200) {
+        alert("Успешная регистрация");
+        setSession(response.data.session);
+        console.log("Login details:", user);
+        close();
+        setError("");
+      } else {
+        alert("Что-то пошло не так, попробуйте снова.");
+      }
+    } catch (error) {
+      alert(error);
+    }
   };
 
   return (

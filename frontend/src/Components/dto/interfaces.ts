@@ -20,11 +20,13 @@ export interface User {
 
 export interface RegUser {
   username: string;
+  email: string;
   password: string;
   userType: string;
 }
 
 export interface IAuth {
+  setSession: Function;
   close: Function;
 }
 

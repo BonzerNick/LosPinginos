@@ -1,6 +1,5 @@
 import "./App.css";
 import { useEffect, useState } from "react";
-import { API } from "./Components/api/api";
 import { Header } from "./Components/Menu/Header";
 import CourseTabMenu from "./Components/Menu/Course Panel/CorseTabMenu";
 import { EffectSection } from "./Components/EffectSection";
@@ -13,11 +12,14 @@ import { useCookies } from "react-cookie";
 
 function App() {
   const [modalState, setModalState] = useState<MODAL_STATES>(MODAL_STATES.HIDE);
-  // const [session, setSession] = useState("");
   const [cookies, setCookie, removeCookie] = useCookies(["session"]);
 
   function setSession(session: string) {
     setCookie("session", session);
+  }
+
+  function removeSession(session: string) {
+    removeCookie("session");
   }
 
   const openModal = (title: string, state: MODAL_STATES) => {
@@ -42,9 +44,9 @@ function App() {
   const getModal = (state: MODAL_STATES) => {
     switch (state) {
       case MODAL_STATES.SIGN_UP:
-        return <Login close={closeModal}></Login>;
+        return <Login close={closeModal} setSession={setSession}></Login>;
       case MODAL_STATES.REGISTER:
-        return <Register close={closeModal}></Register>;
+        return <Register close={closeModal} setSession={setSession}></Register>;
       case MODAL_STATES.CONFIRM:
         return;
       case MODAL_STATES.CREATE_COURSE:
@@ -64,22 +66,16 @@ function App() {
         addTitle="Добавить что-то"
         profileTitle="Профиль"
       ></Header>
-      {session && (
+      {cookies.session && (
         <main className="bg-neutral-300 min-h-screen flex flex-col px-5 text-white">
           <section className="lg:mx-20">
             <CourseTabMenu courses={TEST_COURSES}></CourseTabMenu>
           </section>
-          <EffectSection
-            open={modalState !== MODAL_STATES.HIDE}
-            close={closeModal}
-          >
-            {getModal(modalState)}
-          </EffectSection>
           <BottomRightButton onClick={() => addSomthing()}></BottomRightButton>
         </main>
       )}
 
-      {!session && (
+      {!cookies.session && (
         <section className="flex flex-col justify-center items-center min-h-screen ">
           <div className="bg-gray-300 p-4 rounded-md shadow-md">
             <p className="text-lg font-medium text-gray-800">
@@ -102,6 +98,9 @@ function App() {
           </div>
         </section>
       )}
+      <EffectSection open={modalState !== MODAL_STATES.HIDE} close={closeModal}>
+        {getModal(modalState)}
+      </EffectSection>
     </div>
   );
 }
