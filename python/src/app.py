@@ -1,5 +1,6 @@
 import hashlib
 import uuid
+from dataclasses import dataclass
 
 import psycopg2
 import requests
@@ -7,9 +8,16 @@ import uvicorn
 from connection_config import connection_params
 from fastapi import Body, FastAPI, Header, Request
 
+
+@dataclass
+class User:
+    role: str
+    user_id: int
+
+
 app = FastAPI()
 
-user_sessions = {}
+user_sessions: dict[str, User] = {}
 
 
 @app.post("/signup")
@@ -71,22 +79,22 @@ async def login(data=Body()):
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT role FROM client " "WHERE login = %s and password = %s",
+            "SELECT id, role FROM client " "WHERE login = %s and password = %s",
             (username, hashed_password),
         )
-        role = cursor.fetchone()
-        if role:
+        user_id, role = cursor.fetchone()
+        if user_id:
             session_key = str(uuid.uuid4())
-            user_sessions[session_key] = role
+            user_sessions[session_key] = User(role=role, user_id=user_id)
             conn.commit()
-            return {"key": session_key}
+            return {"session_key": session_key}
         else:
             return {"message": "wrong login or password"}
 
 
 @app.post("/logout")
 async def logout(request: Request):
-    session_key = request.headers["key"]
+    session_key = request.headers["session_key"]
     del user_sessions[session_key]
     return {"message": "ok"}
 
@@ -119,19 +127,53 @@ async def create_git_user(data=Body()):
     return response.json() | {"code": response.status_code}
 
 
-# @app.post("/singup")
-# async def root():
-#     return "Fuck you!"
+@app.post("/teacher/create-course")
+async def create_course(request: Request):
+    print(user_sessions)
+    session_key = request.headers["session_key"]
+    data = await request.json()
+    print(session_key)
+    user = user_sessions.get(session_key)
+    print(user)
+    if not user or user.role != "teacher":
+        return {"message": "no permissions"}
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO course "
+            "(author_id, title, description, thumbnail) "
+            "VALUES (%s, %s, %s, %s) returning id",
+            (user.user_id, data["title"], data["desc"], ""),
+        )
+        course_id = cursor.fetchone()[0]
+        return {"id": course_id}
 
 
-# @app.post("/logout")
-# async def root():
-#     return "Fuck you!"
-
-
-# @app.post("/user/courses")
-# async def root():
-#     return "Fuck you!"
+@app.post("/user/courses")
+async def user_courses(request: Request):
+    session_key = request.headers["session_key"]
+    user = user_sessions.get(session_key)
+    if not user or user.role != "teacher":
+        return {"message": "no permissions"}
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, title, description, thumbnail FROM course "
+            "where author_id = %s",
+            (user.user_id,),
+        )
+        courses = []
+        for course_info in cursor.fetchall():
+            course_id, title, description, thumbnail = course_info
+            courses.append(
+                {
+                    "id": course_id,
+                    "thumbnail": thumbnail,
+                    "title": title,
+                    "desc": description,
+                }
+            )
+        return courses
 
 
 # @app.post("/course/<id>/entries")
@@ -162,8 +204,5 @@ async def create_git_user(data=Body()):
 # async def root():
 #     return "Fuck you!"
 
-# @app.post("/teacher/create-course")
-# async def root():
-#     return "Fuck you!"
 
 uvicorn.run(app, host="0.0.0.0")
