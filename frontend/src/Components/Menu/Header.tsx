@@ -14,7 +14,7 @@ export function Header({
   profileTitle,
 }: HeaderProps) {
   return (
-    <header className="bg-gray-500 text-white p-3 px-2">
+    <header className="bg-zinc-500 text-white p-3 px-2">
       <div className="container mx-auto flex justify-between items-center">
         <Logo />
         <nav>
