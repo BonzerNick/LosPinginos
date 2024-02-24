@@ -5,11 +5,31 @@ export interface ICourse {
   thumbnail: string;
 }
 
-export const enum PRESETS_MODAL_STATES {
+export const enum MODAL_STATES {
   HIDE = "HIDE",
   SIGN_UP = "SIGN_UP",
   REGISTER = "REGISTER",
   CONFIRM = "CONFIRM",
   ADD_COURSE = "ADD_COURSE",
   CREATE_COURSE = "CREATE_COURSE",
+}
+export interface User {
+  username: string;
+  password: string;
+}
+
+export interface RegUser {
+  username: string;
+  password: string;
+  userType: string;
+}
+
+export interface IAuth {
+  close: Function;
+}
+
+export const enum USER_TYPE {
+  STUDENT = "STUDENT",
+  TEACHER = "TEACHER",
+  ADMIN = "ADMIN",
 }

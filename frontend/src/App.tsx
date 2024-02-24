@@ -1,24 +1,30 @@
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { API } from "./Components/api/api";
 import { Header } from "./Components/Menu/Header";
-import CourseTabMenu from "./Components/Menu/Menu";
-import { v4 as uuidv4 } from "uuid";
+import CourseTabMenu from "./Components/Menu/Course Panel/CorseTabMenu";
 import { EffectSection } from "./Components/EffectSection";
-import { PRESETS_MODAL_STATES } from "./Components/dto/interfaces";
+import { MODAL_STATES } from "./Components/dto/interfaces";
+import { TEST_COURSES } from "./constants";
+import { BottomRightButton, Button } from "./Components/Buttons";
+import { Register } from "./Components/auth/Register";
+import { Login } from "./Components/auth/Login";
+import { useCookies } from "react-cookie";
 
 function App() {
-  const [modalState, setModalState] = useState<PRESETS_MODAL_STATES>(
-    PRESETS_MODAL_STATES.HIDE
-  );
+  const [modalState, setModalState] = useState<MODAL_STATES>(MODAL_STATES.HIDE);
+  // const [session, setSession] = useState("");
+  const [cookies, setCookie, removeCookie] = useCookies(["session"]);
 
-  const openModal = (title: string, state: PRESETS_MODAL_STATES) => {
+  function setSession(session: string) {
+    setCookie("session", session);
+  }
+
+  const openModal = (title: string, state: MODAL_STATES) => {
     setModalState(state);
-
-    // setModalTitle(title);
   };
   const closeModal = () => {
-    setModalState(PRESETS_MODAL_STATES.HIDE);
+    setModalState(MODAL_STATES.HIDE);
   };
 
   const onAddClick = () => {
@@ -29,6 +35,27 @@ function App() {
     return console.log("profile");
   };
 
+  const addSomthing = () => {
+    return console.log("try add something");
+  };
+
+  const getModal = (state: MODAL_STATES) => {
+    switch (state) {
+      case MODAL_STATES.SIGN_UP:
+        return <Login close={closeModal}></Login>;
+      case MODAL_STATES.REGISTER:
+        return <Register close={closeModal}></Register>;
+      case MODAL_STATES.CONFIRM:
+        return;
+      case MODAL_STATES.CREATE_COURSE:
+        return;
+      case MODAL_STATES.ADD_COURSE:
+        return;
+      default:
+        return <div></div>;
+    }
+  };
+
   return (
     <div className="App">
       <Header
@@ -37,67 +64,44 @@ function App() {
         addTitle="Добавить что-то"
         profileTitle="Профиль"
       ></Header>
-      <main className="bg-neutral-900 min-h-screen flex flex-col p-5 text-white">
-        <section className="xl:mx-40 md:20">
-          {/* <TableOfCourses */}
-          <CourseTabMenu
-            courses={[
-              {
-                id: uuidv4(),
-                title: "Aboba1",
-                desc: "desc",
-                thumbnail: "https://",
-              },
-              {
-                id: uuidv4(),
-                title: "Aboba2",
-                desc: "desc",
-                thumbnail: "https://",
-              },
-              {
-                id: uuidv4(),
-                title: "Aboba3",
-                desc: "desc",
-                thumbnail: "https://",
-              },
-              {
-                id: uuidv4(),
-                title: "Aboba4",
-                desc: "desc",
-                thumbnail: "https://",
-              },
-              {
-                id: uuidv4(),
-                title: "Aboba5",
-                desc: "desc",
-                thumbnail: "https://",
-              },
-              {
-                id: uuidv4(),
-                title: "Aboba6",
-                desc: "desc",
-                thumbnail: "https://",
-              },
-            ]}
-          ></CourseTabMenu>
+      {session && (
+        <main className="bg-neutral-300 min-h-screen flex flex-col px-5 text-white">
+          <section className="lg:mx-20">
+            <CourseTabMenu courses={TEST_COURSES}></CourseTabMenu>
+          </section>
+          <EffectSection
+            open={modalState !== MODAL_STATES.HIDE}
+            close={closeModal}
+          >
+            {getModal(modalState)}
+          </EffectSection>
+          <BottomRightButton onClick={() => addSomthing()}></BottomRightButton>
+        </main>
+      )}
+
+      {!session && (
+        <section className="flex flex-col justify-center items-center min-h-screen ">
+          <div className="bg-gray-300 p-4 rounded-md shadow-md">
+            <p className="text-lg font-medium text-gray-800">
+              Необходимо авторизоваться
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <button
+                onClick={() => openModal("Hello", MODAL_STATES.REGISTER)}
+                className="w-full py-2 px-4 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
+              >
+                Регистрация
+              </button>
+              <button
+                onClick={() => openModal("Hello", MODAL_STATES.SIGN_UP)}
+                className="w-full py-2 px-4 bg-green-500 text-white rounded-md focus:outline-none hover:bg-green-600"
+              >
+                Авторизация
+              </button>
+            </div>
+          </div>
         </section>
-        <EffectSection
-          open={modalState !== PRESETS_MODAL_STATES.HIDE}
-          close={closeModal}
-        >
-          {<div> ABOBA</div>}
-        </EffectSection>
-        <button
-          onClick={() => openModal("Hello", PRESETS_MODAL_STATES.SIGN_UP)}
-        >
-          SIGN UP
-        </button>
-        {/* <section className="flex gap-5 m-5">
-          <Button onClick={showPlatform} title={"Показать платформу"}></Button>
-          <Button onClick={onClick} title={"Узнать платформу"}></Button>
-        </section>
-        {show && <span>{plarform.toString()}</span>} */}
-      </main>
+      )}
     </div>
   );
 }

@@ -14,14 +14,14 @@ export function Header({
   profileTitle,
 }: HeaderProps) {
   return (
-    <header className="bg-zinc-500 text-white p-3 px-2">
-      <div className="container mx-auto flex justify-between items-center">
+    <header className=" bg-green-300 text-neutral-900 p-3 px-2">
+      <div className="lg:mx-24 mx-3 flex justify-between items-center ">
         <Logo />
         <nav>
           <ul className="flex space-x-4">
             <li>
               <a
-                className="hover:text-gray-300 transition duration-300 ease-in-out disable-select"
+                className="hover:opacity-30  transition duration-300 ease-in-out disable-select"
                 onClick={(e) => addSomething()}
               >
                 {addTitle}
@@ -29,7 +29,7 @@ export function Header({
             </li>
             <li>
               <a
-                className="hover:text-gray-300 transition duration-300 ease-in-out disable-select"
+                className="hover:opacity-30  transition duration-300 ease-in-out disable-select"
                 onClick={(e) => profileActions()}
               >
                 {profileTitle}
@@ -39,5 +39,6 @@ export function Header({
         </nav>
       </div>
     </header>
+    // </div>
   );
 }

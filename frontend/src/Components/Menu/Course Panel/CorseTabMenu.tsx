@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import CoursePanel from "./Course Panel/CoursePanel"; // Assuming the file path is correct
-import { ICourse } from "../dto/interfaces";
-import { EffectSection } from "../EffectSection";
+import CoursePanel from "./CoursePanel";
+import { ICourse } from "../../dto/interfaces";
 
 interface TableOfCoursesProps {
   courses: ICourse[];
@@ -21,17 +20,15 @@ const CourseTabMenu = ({ courses }: TableOfCoursesProps) => {
     setSearchQuery(event.target.value);
   };
 
-  //   const [isModalOpen, setIsModalOpen] = useState(false);
-
   return (
     <div>
       <div className="mt-4">
         <input
           type="text"
-          placeholder="Search..."
+          placeholder="Поиск..."
           value={searchQuery}
           onChange={handleSearchChange}
-          className="border border-gray-300 rounded-md px-4 py-2 w-full text-black "
+          className="border border-gray-300 rounded-md px-4 py-2 w-full text-black"
         />
       </div>
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
