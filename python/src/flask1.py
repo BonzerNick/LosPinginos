@@ -91,7 +91,6 @@ async def login(data=Body()):
 @app.post("/logout")
 async def logout(request: Request):
     session_key = request.headers["key"]
-    print(session_key)
     del user_sessions[session_key]
     return {"message": "ok"}
 
