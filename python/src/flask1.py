@@ -165,8 +165,7 @@ async def user_courses(request: Request):
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT FROM course "
-            "id, title, description, thumbnail "
+            "SELECT id, title, description, thumbnail FROM course "
             "where author_id = %s",
             (user.user_id,)
         )
