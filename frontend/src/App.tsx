@@ -1,8 +1,8 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { Button } from "./Components/Buttons";
 import { useState } from "react";
 import { API } from "./Components/api/api";
+import { Header } from "./Components/Menu/Header";
 
 function App() {
   const [show, setShow] = useState(false);
@@ -21,17 +21,24 @@ function App() {
     }
   };
 
+  const onAddClick = () => {
+    return console.log("add");
+  };
+
+  const onProfileClick = () => {
+    return console.log("profile");
+  };
+
   return (
+    // <div></div>
     <div className="App">
-      <header className="p-3 text-center bg-blue-900 text-white text-3xl flex justify-center">
-        <ul className=" flex gap-10 text-sm">
-          {["Aboba1", "Aboba2", "Aboba3", , "Aboba4"].map((value, k) => {
-            return <li key={k}>{value}</li>;
-          })}
-        </ul>
-      </header>
+      <Header
+        addSomething={onAddClick}
+        profileActions={onProfileClick}
+        addTitle="Добавить что-то"
+        profileTitle="Профиль"
+      ></Header>
       <main className="bg-gray-900 min-h-screen flex flex-col items-center justify-center text-white">
-        <img src={logo} className="App-logo" alt="logo" />
         <section className="flex gap-5 m-5">
           <Button onClick={showPlatform} title={"Показать платформу"}></Button>
           <Button onClick={onClick} title={"Узнать платформу"}></Button>
