@@ -5,11 +5,18 @@ from connection_config import connection_params
 import hashlib
 from fastapi import Body, FastAPI, Header, Request
 import uvicorn
+from dataclasses import dataclass
+
+
+@dataclass
+class User:
+    role: str
+    user_id: int
 
 
 app = FastAPI()
 
-user_sessions = {}
+user_sessions: dict[str, User] = {}
 
 
 @app.post("/signup")
@@ -56,9 +63,9 @@ async def register(data=Body()):
             (response.json()['login'], hashed_password, role, email)
         )
         return {
-            'message': 'User registered successfully',
-            'username': username
-        }, 201
+                   'message': 'User registered successfully',
+                   'username': username
+               }, 201
 
 
 # Эндпоинт для входа пользователя
@@ -74,14 +81,14 @@ async def login(data=Body()):
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT role FROM client "
+            "SELECT id, role FROM client "
             "WHERE login = %s and password = %s",
             (username, hashed_password)
         )
-        role = cursor.fetchone()
-        if role:
+        user_id, role = cursor.fetchone()
+        if user_id:
             session_key = str(uuid.uuid4())
-            user_sessions[session_key] = role
+            user_sessions[session_key] = User(role=role, user_id=user_id)
             conn.commit()
             return {"key": session_key}
         else:
@@ -126,4 +133,28 @@ async def create_git_user(data=Body()):
         })
     return response.json() | {'code': response.status_code}
 
+
+@app.post("/teacher/create-course")
+async def create_course(request: Request):
+    print(user_sessions)
+    session_key = request.headers["key"]
+    data = await request.json()
+    print(session_key)
+    user = user_sessions.get(session_key)
+    print(user)
+    if not user or user.role != "teacher":
+        return {'message': 'no permissions'}
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO course "
+            "(author_id, title, description, thumbnail) "
+            "VALUES (%s, %s, %s, %s) returning id",
+            (user.user_id, data["title"], data["desc"], "")
+        )
+        course_id = cursor.fetchone()[0]
+        return {'id': course_id}
+
+
 uvicorn.run(app, host='0.0.0.0')
+
