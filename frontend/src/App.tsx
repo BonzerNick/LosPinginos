@@ -62,8 +62,7 @@ function App() {
       <Header
         addSomething={onAddClick}
         profileActions={() => removeSession()}
-        addTitle="Добавить что-то"
-        profileTitle="Профиль"
+        profileTitle="Выйти"
         show={showLogOut}
       ></Header>
       {cookies.session && (
