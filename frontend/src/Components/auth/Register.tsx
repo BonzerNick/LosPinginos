@@ -24,7 +24,7 @@ export function Register({ close, setSession }: IAuth) {
       console.log(response);
       if (response.status === 200) {
         alert("Успешная регистрация");
-        setSession(response.data.session);
+        // setSession(response.data.session);
         setError("");
         close();
       } else {
