@@ -3,10 +3,12 @@ import uuid
 from dataclasses import dataclass
 
 import psycopg2
+import psycopg2.extras
 import requests
 import uvicorn
 from connection_config import connection_params
 from fastapi import Body, FastAPI, Header, Request
+from string import digits
 
 
 @dataclass
@@ -25,9 +27,9 @@ async def register(data=Body()):
     # Получение данных из запроса
     # Проверка наличия необходимых данных в запросе
     if (
-        "login" not in data
-        or "password" not in data
-        or ("email" not in data or "role" not in data)
+            "login" not in data
+            or "password" not in data
+            or ("email" not in data or "role" not in data)
     ):
         return {"message": "Missing username, password, email or role"}
 
@@ -280,9 +282,91 @@ async def create_repo(template_repo: str, request: Request):
     print(response.status_code)
     return {"message": "ok"}
 
+
 @app.post('/git-hook')
-def process_git_hook(request: Request):
+async def process_git_hook(request: Request):
+    payload = await request.json()
+    owner = payload["repository"]["owner"]["login"]
+    repo_name = payload["repository"]["owner"]["name"]
+    commits = payload["repository"]["commits"]
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT 1 FROM course WHERE course_id = %s",
+            (repo_name,),
+        )
+        result = cursor.fetchone()[0]
+        if result is not None:
+            rebuild_entries(repo_name, owner, repo_name)
+            return {"message": "ok"}
+        link = f'{owner}/{repo_name}'
+        cursor.execute(
+            "SELECT 1 FROM usertask WHERE link = %s",
+            (link,)
+        )
+        result = cursor.fetchone()[0]
+        if result is not None:
+            process_commits(commits, owner, repo_name)
+            return {"message": "ok"}
+        #####################
     return {"message": "ok"}
+
+
+def parse_filename(filename):
+    for (num_i, chr) in enumerate(filename):
+        if chr not in digits:
+            if num_i == 0:
+                return None
+            pos = int(filename[:num_i])
+            _type = filename[num_i]
+            title = filename[num_i + 1:]
+            return pos, _type, title
+
+
+def rebuild_entries(course_id, owner, repo):
+    response = requests.post(
+        url=f"http://127.0.0.1:4000/api/v1/repos/{owner}/{repo}/contents",
+        headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
+    )
+    files = response.json()
+    entries = []
+    for file in files:
+        parse = parse_filename(file["name"])
+        if parse is not None:
+            pos, _type, title = parse
+            entries.append(
+                (title, "task" if _type == "t" else "lecture", course_id, file["name"], pos)
+            )
+
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM entries WHERE course_id = %s', (course_id,))
+        psycopg2.extras.execute_values(
+            cursor,
+            "INSERT INTO entry(title, type, course_id, link, pos)"
+            "VALUES %s",
+            entries
+        )
+
+
+def process_commits(commits, owner, repo_name):
+    course_id = repo_name
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT is FROM client WHERE login = %s",
+            (owner,),
+        )
+        user_id = cursor.fetchone()[0]
+    for commit in commits:
+        if "#FINAL" in commit["message"]:
+            with psycopg2.connect(**connection_params) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "UPDATE usertask SET student_status = 'To Grade'"
+                    "where user_id = %s, course_id = %s ",
+                    (user_id, course_id),
+                )
 
 
 uvicorn.run(app, host="0.0.0.0")
