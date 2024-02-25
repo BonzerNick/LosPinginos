@@ -27,6 +27,9 @@ services:
     depends_on:
       database:
         condition: service_healthy 
+    environment:
+      BASE_URL: "http://10.124.20.57:4000/api/v1"
+      TOKEN: "token 3dc7c38c526c10676533e1262d6b75c7020a05b9"
 
   frontend:
     build:
