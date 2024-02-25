@@ -25,6 +25,8 @@ export function Login({ close, setSession }: IAuth) {
       console.log(response);
       if (response.status === 200) {
         alert("Успешная авторизация");
+        console.log(response.data)
+        // alert(");
         setSession(response.data.session_key);
         console.log("Login details:", user);
         close();
