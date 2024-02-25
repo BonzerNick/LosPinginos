@@ -8,6 +8,10 @@ import { BottomRightButton, Button } from "./Components/Buttons";
 import { Register } from "./Components/auth/Register";
 import { Login } from "./Components/auth/Login";
 import { useCookies } from "react-cookie";
+import { TEST_COURSES } from "./constants";
+import { FORM } from "./Components/Menu/Form";
+import Sidebar from "./Components/Menu/Sidebar";
+import Widget from "./Components/Menu/windet";
 
 function App() {
   const [modalState, setModalState] = useState<MODAL_STATES>(MODAL_STATES.HIDE);
@@ -36,7 +40,7 @@ function App() {
   };
 
   const addSomthing = () => {
-    return console.log("try add something");
+    setModalState(MODAL_STATES.CREATE_COURSE);
   };
 
   const getModal = (state: MODAL_STATES) => {
@@ -48,7 +52,7 @@ function App() {
       case MODAL_STATES.CONFIRM:
         return;
       case MODAL_STATES.CREATE_COURSE:
-        return;
+        return <FORM close={closeModal} setSession={setSession}></FORM>;
       case MODAL_STATES.ADD_COURSE:
         return;
       default:
@@ -64,15 +68,50 @@ function App() {
         profileTitle="Выйти"
         show={showLogOut}
       ></Header>
-      {cookies.session && (
+      {/* <Sidebar
+        tasks={[
+          { id: 1, title: "Лекция" },
+          { id: 2, title: "Задание 1" },
+          { id: 2, title: "Задание 2" },
+          { id: 4, title: "Задание 3" },
+          { id: 4, title: "Задание 4" },
+          { id: 4, title: "Задание 5" },
+        ]}
+      ></Sidebar> */}
+      <div className="flex justify-center items-center h-screen">
+        <Widget
+          title="Введение в Искусственный Интеллект и Машинное Обучение"
+          description="
+          Описание:
+          Курс 
+          
+          Этот курс нацелен на студентов и профессионалов без предварительного опыта в области Искусственного Интеллекта (ИИ) и Машинного Обучения (МО). Он предоставляет уникальную возможность ознакомиться с основными концепциями, методами и инструментами, используемыми в области ИИ и МО.
+          
+          В ходе курса вы узнаете:
+          
+              Основные концепции и терминологию Искусственного Интеллекта и Машинного Обучения.
+              Различные подходы к обучению моделей Машинного Обучения, включая надзорное и безнадзорное обучение.
+              Применение Машинного Обучения в различных областях, таких как медицина, финансы, технологии и другие.
+              Инструменты и библиотеки, используемые для реализации алгоритмов Машинного Обучения.
+          
+          Курс включает в себя лекции, практические занятия и проекты, которые помогут вам применить полученные знания на практике. Наша цель - подготовить вас к успешному старту в области Искусственного Интеллекта и Машинного Обучения и вдохновить на дальнейшее обучение и исследования в этой захватывающей области.
+          
+          Присоединяйтесь к нашему курсу и откройте для себя увлекательный мир Искусственного Интеллекта и Машинного Обучения!"
+          githubLink="https://github.com/example/sample"
+        />
+      </div>
+      {/* {!cookies.session && (
         <main className="bg-neutral-300 min-h-screen flex flex-col px-5 text-white">
           <section className="lg:mx-20">
-            <CourseTabMenu session={cookies.session}></CourseTabMenu>
+            <CourseTabMenu
+              courses={TEST_COURSES}
+              session={cookies.session}
+            ></CourseTabMenu>
           </section>
           <BottomRightButton onClick={() => addSomthing()}></BottomRightButton>
-        </main>
-      )}
-      {!cookies.session && (
+        </main> 
+      )}*/}
+      {/* {!cookies.session && (
         <section className="flex flex-col justify-center items-center min-h-screen ">
           <div className="bg-gray-300 p-4 rounded-md shadow-md">
             <p className="text-lg font-medium text-gray-800">
@@ -94,10 +133,10 @@ function App() {
             </div>
           </div>
         </section>
-      )}
-      <EffectSection open={modalState !== MODAL_STATES.HIDE} close={closeModal}>
+      )} */}
+      {/* <EffectSection open={modalState !== MODAL_STATES.HIDE} close={closeModal}>
         {getModal(modalState)}
-      </EffectSection>
+      </EffectSection> */}
     </div>
   );
 }

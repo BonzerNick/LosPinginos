@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import CoursePanel from "./CoursePanel";
 import { ICourse } from "../../dto/interfaces";
 import { API } from "../../api/api";
+import { TEST_COURSES } from "../../../constants";
 
 interface TableOfCoursesProps {
   session: string;
+  courses?: ICourse[];
 }
 
 const CourseTabMenu = ({ session }: TableOfCoursesProps) => {
@@ -37,9 +39,9 @@ const CourseTabMenu = ({ session }: TableOfCoursesProps) => {
       return [];
     }
   }
-  useEffect(() => {
-    fetchCourses();
-  });
+  // useEffect(() => {
+  //   fetchCourses();
+  // });
 
   return (
     <div>
@@ -53,7 +55,7 @@ const CourseTabMenu = ({ session }: TableOfCoursesProps) => {
         />
       </div>
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filteredCourses?.map((course, index) => (
+        {TEST_COURSES.map((course, index) => (
           <CoursePanel
             key={index}
             course={course}
