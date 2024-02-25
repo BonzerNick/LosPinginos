@@ -19,14 +19,14 @@ export function Header({
         <Logo />
         <nav>
           <ul className="flex space-x-4">
-            <li>
+            {/* <li>
               <a
                 className="hover:opacity-30  transition duration-300 ease-in-out disable-select"
                 onClick={(e) => addSomething()}
               >
                 {addTitle}
               </a>
-            </li>
+            </li> */}
             <li>
               <a
                 className="hover:opacity-30  transition duration-300 ease-in-out disable-select"
