@@ -42,17 +42,17 @@ async def register(data=Body()):
     # Получение данных из запроса
     # Проверка наличия необходимых данных в запросе
     if (
-            "login" not in data
+            "username" not in data
             or "password" not in data
-            or ("email" not in data or "role" not in data)
+            or ("email" not in data or "userType" not in data)
     ):
         return {"message": "Missing username, password, email or role"}
 
     # Получение имени пользователя и пароля из запроса
-    username = data["login"]
+    username = data["username"]
     password = data["password"]
     email = data["email"]
-    role = data["role"]
+    role = data["userType"]
     if len(password) < 8:
         return {"message": "Pass len less than 8 symbols"}
     # Хэширование пароля
@@ -86,10 +86,10 @@ async def register(data=Body()):
 # Эндпоинт для входа пользователя
 @app.post("/login")
 async def login(data=Body()):
-    if "login" not in data or "password" not in data:
+    if "username" not in data or "password" not in data:
         return {"message": "Missing username or password"}
 
-    username = data["login"]
+    username = data["username"]
     password = data["password"]
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     # Поиск пользователя в базе данных
@@ -238,15 +238,8 @@ async def get_content(course_id: str, file_name: str, request: Request):
         headers={"Authorization": con.TOKEN},
     )
     return {"text": response.text}
-# @app.post("/course/<id>/entries")
-# async def root():
-#     return "Fuck you!"
 
 # @app.post("/course/<id>/overview")
-# async def root():
-#     return "Fuck you!"
-
-# @app.post("/course/<course-id>/entry/<entry-id>")
 # async def root():
 #     return "Fuck you!"
 
@@ -255,14 +248,6 @@ async def get_content(course_id: str, file_name: str, request: Request):
 #     return "Fuck you!"
 
 # @app.post("/comments/add/<id>")
-# async def root():
-#     return "Fuck you!"
-
-# @app.post("/content/<id>")
-# async def root():
-#     return "Fuck you!"
-
-# @app.post("/user/add2course/<course-name>")
 # async def root():
 #     return "Fuck you!"
 
