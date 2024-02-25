@@ -4,16 +4,16 @@ import { API } from "../api/api";
 
 export function Register({ close, setSession }: IAuth) {
   const [user, setUser] = useState<RegUser>({
-    username: "",
+    login: "",
     email: "",
     password: "",
-    userType: USER_TYPE.STUDENT,
+    role: USER_TYPE.STUDENT,
   });
   const [error, setError] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!user.username.trim() || !user.password.trim() || !user.email.trim()) {
+    if (!user.login.trim() || !user.password.trim() || !user.email.trim()) {
       setError("Пожалуйста введите все необходимые данные.");
       return;
     }
@@ -63,12 +63,12 @@ export function Register({ close, setSession }: IAuth) {
             />
           </div>
           <div>
-            <label htmlFor="username">Имя пользователя:</label>
+            <label htmlFor="login">Имя пользователя:</label>
             <input
               type="text"
-              id="username"
-              name="username"
-              value={user.username}
+              id="login"
+              name="login"
+              value={user.login}
               onChange={handleChange}
               className="w-full border rounded px-4 py-2"
               required
@@ -87,13 +87,13 @@ export function Register({ close, setSession }: IAuth) {
             />
           </div>
           <div>
-            <label htmlFor="userType" className="block">
+            <label htmlFor="role" className="block">
               Тип пользователя:
             </label>
             <select
-              id="userType"
-              name="userType"
-              value={user.userType}
+              id="role"
+              name="role"
+              value={user.role}
               onChange={handleChange}
               className="w-full border rounded px-4 py-2"
             >

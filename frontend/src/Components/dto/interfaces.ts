@@ -14,15 +14,15 @@ export const enum MODAL_STATES {
   CREATE_COURSE = "CREATE_COURSE",
 }
 export interface User {
-  username: string;
+  login: string;
   password: string;
 }
 
 export interface RegUser {
-  username: string;
+  login: string;
   email: string;
   password: string;
-  userType: string;
+  role: string;
 }
 
 export interface IAuth {
