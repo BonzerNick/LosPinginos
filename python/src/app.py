@@ -276,6 +276,25 @@ async def create_repo(task_course_id: str, request: Request):
     return response.json()
 
 
+def process_commits(commits, owner, repo_name):
+    course_id = repo_name
+    for commit in commits:
+        if "#FINAL" in commit["message"]:
+            with psycopg2.connect(**connection_params) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT is FROM client WHERE login = %s",
+                    (owner,),
+                )
+                user_id = cursor.fetchone()[0]
+                cursor = conn.cursor()
+                cursor.execute(
+                    "UPDATE usertask SET student_status = 'To Grade'"
+                    "where user_id = %s, course_id = %s ",
+                    (user_id, course_id),
+                )
+
+
 @app.post("/create_repo_with_template/{template_repo}")
 async def create_repo(template_repo: str, request: Request):
     session_key = request.headers["session_key"]
