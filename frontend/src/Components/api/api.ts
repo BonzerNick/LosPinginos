@@ -8,7 +8,7 @@ const instance = (timeout = DEFAULT_TIMEOUT) => {
   const request_id = uuidv4();
   console.log(`Create instance with request_id ${request_id}`);
   return axios.create({
-    baseURL: "http://10.124.20.57:8000/",
+    baseURL: "http://10.124.192.217:8000/",
     timeout: timeout,
   });
 };

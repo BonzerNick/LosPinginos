@@ -3,7 +3,7 @@ import { IAuth, User } from "../dto/interfaces";
 import { API } from "../api/api";
 
 export function Login({ close, setSession }: IAuth) {
-  const [user, setUser] = useState<User>({ username: "", password: "" });
+  const [user, setUser] = useState<User>({ login: "", password: "" });
   const [error, setError] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,7 +16,7 @@ export function Login({ close, setSession }: IAuth) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!user.username.trim() || !user.password.trim()) {
+    if (!user.login.trim() || !user.password.trim()) {
       setError("Please enter both username and password.");
       return;
     }
@@ -48,9 +48,9 @@ export function Login({ close, setSession }: IAuth) {
             </label>
             <input
               type="text"
-              id="username"
-              name="username"
-              value={user.username}
+              id="login"
+              name="login"
+              value={user.login}
               onChange={handleChange}
               className="w-full border rounded px-4 py-2"
               required
