@@ -8,7 +8,7 @@ const instance = (timeout = DEFAULT_TIMEOUT) => {
   const request_id = uuidv4();
   console.log(`Create instance with request_id ${request_id}`);
   return axios.create({
-    baseURL: "http://localhost:5000/",
+    baseURL: "http://10.124.20.57:8000/",
     timeout: timeout,
   });
 };
@@ -24,7 +24,7 @@ export const API = {
 
   async signup(user: RegUser) {
     return await instance()
-      .post(`/register`, user)
+      .post(`/signup`, user)
       .then((responce) => {
         return responce;
       });

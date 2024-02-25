@@ -32,6 +32,23 @@ test = ["anyio[trio]", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypo
 trio = ["trio (>=0.23)"]
 
 [[package]]
+name = "asgi-correlation-id"
+version = "4.3.1"
+description = "Middleware correlating project logs to individual requests"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "asgi_correlation_id-4.3.1-py3-none-any.whl", hash = "sha256:128509a822e87ac544662804b402761ee2d8fd9769f23339cff220d22d222546"},
+    {file = "asgi_correlation_id-4.3.1.tar.gz", hash = "sha256:3d7efa2c002fa909d6e1a452c1cf8088ff5ac186884b4d9aa5430ed00b036278"},
+]
+
+[package.dependencies]
+starlette = ">=0.18"
+
+[package.extras]
+celery = ["celery"]
+
+[[package]]
 name = "black"
 version = "24.2.0"
 description = "The uncompromising code formatter."
@@ -781,4 +798,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "ddc5b68c4d22a8a9d1cabfd4083cf6df1a21d4006ca995df7f1c60454bdf39d4"
+content-hash = "770b3722f92e93d50f4648407bdfb620c8a1e403657d09d94cecd561ffcbdf4a"
