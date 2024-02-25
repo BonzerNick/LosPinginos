@@ -1,17 +1,18 @@
 import hashlib
 import uuid
 from dataclasses import dataclass
+from string import digits
 
 import psycopg2
 import psycopg2.extras
 import requests
 import uvicorn
 from asgi_correlation_id import CorrelationIdMiddleware
-from connection_config import connection_params
-from fastapi import Body, FastAPI, Header, Request
-from string import digits
+from fastapi import Body, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+
 import const as con
+from connection_config import connection_params
 
 
 @dataclass
@@ -306,58 +307,6 @@ async def add2course(course_id: str, request: Request):
             "INSERT INTO usercourses " "(user_id, course_id) " "VALUES (%s, %s)",
             (user.user_id, course_id),
         )
-    return {"message": "ok"}
-
-
-@app.post("/create_repo/{task_course_id}")
-async def create_repo(task_course_id: str, request: Request):
-    session_key = request.headers["session_key"]
-    user = user_sessions.get(session_key)
-    if not user:
-        return {"message": "no permissions"}
-    with psycopg2.connect(**connection_params) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT login FROM client WHERE id = %s",
-            (user.user_id,),
-        )
-        login = cursor.fetchone()[0]
-    response = requests.post(
-        # url = url,
-        url=f"{con.BASE_URL}/admin/users/{login}/repos",
-        json={
-            "template": True,
-            "name": task_course_id + "_" + login,
-        },
-        headers={"Authorization": con.TOKEN},
-    )
-    return response.json()
-
-
-@app.post("/create_repo_with_template/{template_repo}")
-async def create_repo(template_repo: str, request: Request):
-    session_key = request.headers["session_key"]
-    user = user_sessions.get(session_key)
-    if not user:
-        return {"message": "no permissions"}
-    with psycopg2.connect(**connection_params) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT login FROM client WHERE id = %s",
-            (user.user_id,),
-        )
-        login = cursor.fetchone()[0]
-    template_owner = template_repo.split("_")[2:]
-    template_owner = "_".join(template_owner)
-    response = requests.post(
-        url=f"{con.BASE_URL}/repos/{template_owner}/{template_repo}/generate",
-        json={
-            "name": template_repo + login,
-            "owner": login,
-            "git_content": True,
-        },
-        headers={"Authorization": con.TOKEN},
-    )
     return {"message": "ok"}
 
 
