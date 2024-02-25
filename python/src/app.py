@@ -280,5 +280,9 @@ async def create_repo(template_repo: str, request: Request):
     print(response.status_code)
     return {"message": "ok"}
 
+@app.post('/git-hook')
+def process_git_hook(request: Request):
+    return {"message": "ok"}
+
 
 uvicorn.run(app, host="0.0.0.0")
