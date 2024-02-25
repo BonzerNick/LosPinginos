@@ -58,16 +58,12 @@ async def register(data=Body()):
         url="http://127.0.0.1:4000/api/v1/admin/users",
         json={
             "email": email,
-            "full_name": username,
-            "login_name": username,
-            "must_change_password": False,
             "password": password,
-            "send_notify": True,
-            "source_id": 0,
             "username": username,
         },
         headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
     )
+    # print(response.text)
     # Добавление нового пользователя в базу данных
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
@@ -155,12 +151,31 @@ async def create_course(request: Request):
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO course "
-            "(author_id, title, description, thumbnail) "
-            "VALUES (%s, %s, %s, %s) returning id",
-            (user.user_id, data["title"], data["desc"], ""),
+            "(author_id, title, description, thumbnail, link) "
+            "VALUES (%s, %s, %s, %s, %s) returning id",
+            (user.user_id, data["title"], data["desc"], "", ""),
         )
         course_id = cursor.fetchone()[0]
-        return {"id": course_id}
+        # return {"id": course_id}
+
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT login FROM client WHERE id = %s",
+            (user.user_id,),
+        )
+        login = cursor.fetchone()[0]
+    response = requests.post(
+        # url = url,
+        url=f"http://127.0.0.1:4000/api/v1/admin/users/{login}/repos",
+        json={
+            "template": True,
+            "name": str(course_id),
+        },
+        headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
+    )
+    print(response.status_code)
+    return response.json()
 
 
 @app.post("/user/courses")
