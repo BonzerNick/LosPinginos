@@ -9,6 +9,7 @@ from asgi_correlation_id import CorrelationIdMiddleware
 from connection_config import connection_params
 from fastapi import Body, FastAPI, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
+import const as con
 
 
 @dataclass
@@ -55,7 +56,7 @@ async def register(data=Body()):
     # Хэширование пароля
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     response = requests.post(
-        url="http://127.0.0.1:4000/api/v1/admin/users",
+        url=f"{con.BASE_URL}/admin/users",
         json={
             "email": email,
             "full_name": username,
@@ -66,7 +67,7 @@ async def register(data=Body()):
             "source_id": 0,
             "username": username,
         },
-        headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
+        headers={"Authorization": con.TOKEN},
     )
     # Добавление нового пользователя в базу данных
     with psycopg2.connect(**connection_params) as conn:
@@ -125,7 +126,7 @@ async def create_git_user(data=Body()):
     if len(password) < 8:
         return {"error": "Pass len less than 8 symbols", "code": 400}
     response = requests.post(
-        url="http://10.124.20.57:4000/api/v1/admin/users",
+        url=f"{con.BASE_URL}/api/v1/admin/users",
         json={
             "email": email,
             "full_name": username,
@@ -136,20 +137,17 @@ async def create_git_user(data=Body()):
             "source_id": 0,
             "username": username,
         },
-        headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
+        headers={"Authorization": con.TOKEN},
     )
     return response.json() | {"code": response.status_code}
 
 
 @app.post("/teacher/create-course")
 async def create_course(request: Request):
-    print(user_sessions)
     session_key = request.headers["session_key"]
     data = await request.json()
-    print(session_key)
     user = user_sessions.get(session_key)
-    print(user)
-    if not user or user.role != "teacher":
+    if not user or user.role != con.Role.TEACHER:
         return {"message": "no permissions"}
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
@@ -167,7 +165,7 @@ async def create_course(request: Request):
 async def user_courses(request: Request):
     session_key = request.headers["session_key"]
     user = user_sessions.get(session_key)
-    if not user or user.role != "teacher":
+    if not user:
         return {"message": "no permissions"}
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
@@ -194,7 +192,7 @@ async def user_courses(request: Request):
 async def get_entries(course_id: str, request: Request):
     session_key = request.headers["session_key"]
     user = user_sessions.get(session_key)
-    if not user or user.role != "teacher":
+    if not user:
         return {'message': 'no permissions'}
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
@@ -216,6 +214,28 @@ async def get_entries(course_id: str, request: Request):
             )
         return entries
 
+
+@app.post("/content/{course_id}/{file_name}")
+async def get_content(course_id: str, file_name: str, request: Request):
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT login FROM client "
+            "join course on client.id = course.author_id "
+            "where course.id = %s",
+            (course_id,),
+        )
+        owner = cursor.fetchone()[0]
+    session_key = request.headers["session_key"]
+    user = user_sessions.get(session_key)
+
+    if not user:
+        return {'message': 'no permissions'}
+    response = requests.get(
+        url=f"{con.BASE_URL}/repos/{owner}/{course_id}/raw/{file_name}",
+        headers={"Authorization": con.TOKEN},
+    )
+    return {"text": response.text}
 # @app.post("/course/<id>/entries")
 # async def root():
 #     return "Fuck you!"
@@ -276,12 +296,12 @@ async def create_repo(task_course_id: str, request: Request):
         login = cursor.fetchone()[0]
     response = requests.post(
         # url = url,
-        url=f"http://127.0.0.1:4000/api/v1/admin/users/{login}/repos",
+        url=f"{con.BASE_URL}/admin/users/{login}/repos",
         json={
             "template": True,
             "name": task_course_id + "_" + login,
         },
-        headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
+        headers={"Authorization": con.TOKEN},
     )
     print(response.status_code)
     return response.json()
@@ -300,21 +320,17 @@ async def create_repo(template_repo: str, request: Request):
             (user.user_id,),
         )
         login = cursor.fetchone()[0]
-        #####################
-
     template_owner = template_repo.split("_")[2:]
     template_owner = "_".join(template_owner)
     print(template_owner)
-    #####################
     response = requests.post(
-        # url = url,
-        url=f"http://127.0.0.1:4000/api/v1/repos/{template_owner}/{template_repo}/generate",
+        url=f"{con.BASE_URL}/repos/{template_owner}/{template_repo}/generate",
         json={
             "name": template_repo + login,
             "owner": login,
             "git_content": True,
         },
-        headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
+        headers={"Authorization": con.TOKEN},
     )
     print(response.text)
     print(response.status_code)
