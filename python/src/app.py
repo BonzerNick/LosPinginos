@@ -24,9 +24,7 @@ app = FastAPI()
 
 user_sessions: dict[str, User] = {}
 
-
 app.add_middleware(CorrelationIdMiddleware, validator=None)
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -204,7 +202,6 @@ async def get_entries(course_id: str, request: Request):
         )
         entries = []
         for entry_info in cursor.fetchall():
-            print(entry_info)
             title, entry_type, link, pos = entry_info
             entries.append(
                 {
@@ -287,9 +284,6 @@ async def get_content(course_id: str, entry_pos: str, request: Request):
 
 
 
-# @app.post("/course/<id>/overview")
-# async def root():
-#     return "Fuck you!"
 
 # @app.post("/comments/<id>")
 # async def root():
@@ -302,7 +296,6 @@ async def get_content(course_id: str, entry_pos: str, request: Request):
 
 @app.post("/user/add2course/{course_id}")
 async def add2course(course_id: str, request: Request):
-    print(course_id)
     session_key = request.headers["session_key"]
     user = user_sessions.get(session_key)
     if not user:
@@ -338,7 +331,6 @@ async def create_repo(task_course_id: str, request: Request):
         },
         headers={"Authorization": con.TOKEN},
     )
-    print(response.status_code)
     return response.json()
 
 
@@ -357,7 +349,6 @@ async def create_repo(template_repo: str, request: Request):
         login = cursor.fetchone()[0]
     template_owner = template_repo.split("_")[2:]
     template_owner = "_".join(template_owner)
-    print(template_owner)
     response = requests.post(
         url=f"{con.BASE_URL}/repos/{template_owner}/{template_repo}/generate",
         json={
@@ -367,8 +358,6 @@ async def create_repo(template_repo: str, request: Request):
         },
         headers={"Authorization": con.TOKEN},
     )
-    print(response.text)
-    print(response.status_code)
     return {"message": "ok"}
 
 
