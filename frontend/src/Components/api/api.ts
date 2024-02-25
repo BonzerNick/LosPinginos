@@ -1,8 +1,8 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import { RegUser, User } from "../dto/interfaces";
 
-// NOTE (vkostemko): In the bot, it took 30 ms, to clarify why this is so
-const DEFAULT_TIMEOUT = 1000;
+const DEFAULT_TIMEOUT = 5000;
 
 const instance = (timeout = DEFAULT_TIMEOUT) => {
   const request_id = uuidv4();
@@ -14,9 +14,17 @@ const instance = (timeout = DEFAULT_TIMEOUT) => {
 };
 
 export const API = {
-  async getPlatform(num: number) {
+  async login(user: User) {
     return await instance()
-      .get(`/chain-platform-info/${num}`)
+      .post(`/login`, user)
+      .then((responce) => {
+        return responce;
+      });
+  },
+
+  async signup(user: RegUser) {
+    return await instance()
+      .post(`/register`, user)
       .then((responce) => {
         return responce;
       });
