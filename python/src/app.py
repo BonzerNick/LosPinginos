@@ -79,7 +79,8 @@ async def register(data=Body()):
             "VALUES (%s, %s, %s, %s)",
             (response.json()["login"], hashed_password, role, email),
         )
-        return {"message": "User registered successfully", "username": username}, 201
+        return {"message": "User registered successfully",
+                "username": username}, 201
 
 
 # Эндпоинт для входа пользователя
@@ -118,7 +119,9 @@ async def logout(request: Request):
 @app.post("/create-git-user")
 async def create_git_user(data=Body()):
     # Проверка наличия необходимых данных в запросе
-    if "username" not in data or "password" not in data or ("email" not in data):
+    if "username" not in data or "password" not in data or (
+            "email" not in data
+    ):
         return {"error": "Missing username, password or email", "code": 400}
     # Получение имени пользователя и пароля из запроса
     username = data["username"]
@@ -148,18 +151,33 @@ async def create_course(request: Request):
     session_key = request.headers["session_key"]
     data = await request.json()
     user = user_sessions.get(session_key)
-    if not user or user.role != con.Role.TEACHER or user.role != con.Role.ADMIN:
+    if not user or user.role != "teacher":
         return {"message": "no permissions"}
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO course "
-            "(author_id, title, description, thumbnail) "
-            "VALUES (%s, %s, %s, %s) returning id",
-            (user.user_id, data["title"], data["desc"], ""),
+            "(author_id, title, description, thumbnail, link) "
+            "VALUES (%s, %s, %s, %s, %s) returning id",
+            (user.user_id, data["title"], data["desc"], "", ""),
         )
         course_id = cursor.fetchone()[0]
-        return {"id": course_id}
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT login FROM client WHERE id = %s",
+            (user.user_id,),
+        )
+        username = cursor.fetchone()[0]
+    response = requests.post(
+        url=f"{con.BASE_URL}/admin/users/{username}/repos",
+        json={
+            "template": True,
+            "name": str(course_id),
+        },
+        headers={"Authorization": con.TOKEN},
+    )
+    return response.json()
 
 
 @app.post("/user/courses")
@@ -283,18 +301,6 @@ async def get_content(course_id: str, entry_pos: str, request: Request):
         }
 
 
-
-
-
-# @app.post("/comments/<id>")
-# async def root():
-#     return "Fuck you!"
-
-# @app.post("/comments/add/<id>")
-# async def root():
-#     return "Fuck you!"
-
-
 @app.post("/user/add2course/{course_id}")
 async def add2course(course_id: str, request: Request):
     session_key = request.headers["session_key"]
@@ -304,7 +310,8 @@ async def add2course(course_id: str, request: Request):
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO usercourses " "(user_id, course_id) " "VALUES (%s, %s)",
+            "INSERT INTO usercourses " 
+            "(user_id, course_id) " "VALUES (%s, %s)",
             (user.user_id, course_id),
         )
     return {"message": "ok"}
@@ -340,8 +347,8 @@ async def process_git_hook(request: Request):
 
 
 def parse_filename(filename):
-    for (num_i, chr) in enumerate(filename):
-        if chr not in digits:
+    for (num_i, chr_) in enumerate(filename):
+        if chr_ not in digits:
             if num_i == 0:
                 return None
             pos = int(filename[:num_i])
@@ -362,7 +369,8 @@ def rebuild_entries(course_id, owner, repo):
         if parse is not None:
             pos, _type, title = parse
             entries.append(
-                (title, "task" if _type == "t" else "lecture", course_id, file["name"], pos)
+                (title, "task" if _type == "t" else "lecture",
+                 course_id, file["name"], pos)
             )
 
     with psycopg2.connect(**connection_params) as conn:
