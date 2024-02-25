@@ -5,6 +5,7 @@ interface HeaderProps {
   addTitle?: string;
   profileActions: Function;
   profileTitle?: string;
+  show: boolean;
 }
 
 export function Header({
@@ -12,6 +13,7 @@ export function Header({
   addTitle,
   profileActions,
   profileTitle,
+  show,
 }: HeaderProps) {
   return (
     <header className=" bg-green-300 text-neutral-900 p-3 px-2">
@@ -19,21 +21,23 @@ export function Header({
         <Logo />
         <nav>
           <ul className="flex space-x-4">
-            {/* <li>
+            <li>
               <a
                 className="hover:opacity-30  transition duration-300 ease-in-out disable-select"
                 onClick={(e) => addSomething()}
               >
                 {addTitle}
               </a>
-            </li> */}
+            </li>
             <li>
-              <a
-                className="hover:opacity-30  transition duration-300 ease-in-out disable-select"
-                onClick={(e) => profileActions()}
-              >
-                {profileTitle}
-              </a>
+              {show && (
+                <a
+                  className="hover:opacity-30  transition duration-300 ease-in-out disable-select"
+                  onClick={(e) => profileActions()}
+                >
+                  {profileTitle}
+                </a>
+              )}
             </li>
           </ul>
         </nav>

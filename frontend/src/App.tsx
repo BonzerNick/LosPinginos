@@ -13,13 +13,16 @@ import { useCookies } from "react-cookie";
 function App() {
   const [modalState, setModalState] = useState<MODAL_STATES>(MODAL_STATES.HIDE);
   const [cookies, setCookie, removeCookie] = useCookies(["session"]);
+  const [showLogOut, setshowLogOut] = useState(false);
 
   function setSession(session: string) {
     setCookie("session", session);
+    setshowLogOut((prev) => (prev = true));
   }
 
-  function removeSession(session: string) {
+  function removeSession() {
     removeCookie("session");
+    setshowLogOut((prev) => (prev = false));
   }
 
   const openModal = (title: string, state: MODAL_STATES) => {
@@ -31,10 +34,6 @@ function App() {
 
   const onAddClick = () => {
     return console.log("add");
-  };
-
-  const onProfileClick = () => {
-    return console.log("profile");
   };
 
   const addSomthing = () => {
@@ -62,9 +61,10 @@ function App() {
     <div className="App">
       <Header
         addSomething={onAddClick}
-        profileActions={onProfileClick}
+        profileActions={() => removeSession()}
         addTitle="Добавить что-то"
         profileTitle="Профиль"
+        show={showLogOut}
       ></Header>
       {cookies.session && (
         <main className="bg-neutral-300 min-h-screen flex flex-col px-5 text-white">
@@ -74,7 +74,6 @@ function App() {
           <BottomRightButton onClick={() => addSomthing()}></BottomRightButton>
         </main>
       )}
-
       {!cookies.session && (
         <section className="flex flex-col justify-center items-center min-h-screen ">
           <div className="bg-gray-300 p-4 rounded-md shadow-md">
