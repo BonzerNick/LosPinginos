@@ -24,7 +24,7 @@ export const API = {
 
   async signup(user: RegUser) {
     return await instance()
-      .post(`/singup`, user)
+      .post(`/signup`, user)
       .then((responce) => {
         return responce;
       });

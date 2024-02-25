@@ -5,8 +5,10 @@ from dataclasses import dataclass
 import psycopg2
 import requests
 import uvicorn
+from asgi_correlation_id import CorrelationIdMiddleware
 from connection_config import connection_params
 from fastapi import Body, FastAPI, Header, Request
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @dataclass
@@ -18,6 +20,18 @@ class User:
 app = FastAPI()
 
 user_sessions: dict[str, User] = {}
+
+
+app.add_middleware(CorrelationIdMiddleware, validator=None)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post("/signup")
