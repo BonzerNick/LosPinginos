@@ -149,7 +149,7 @@ async def create_course(request: Request):
     session_key = request.headers["session_key"]
     data = await request.json()
     user = user_sessions.get(session_key)
-    if not user or user.role != con.Role.TEACHER:
+    if not user or user.role != con.Role.TEACHER or user.role != con.Role.ADMIN:
         return {"message": "no permissions"}
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
@@ -217,8 +217,12 @@ async def get_entries(course_id: str, request: Request):
         return entries
 
 
-@app.post("/content/{course_id}/{file_name}")
-async def get_content(course_id: str, file_name: str, request: Request):
+@app.post("/content/{course_id}/{entry_pos}")
+async def get_content(course_id: str, entry_pos: str, request: Request):
+    session_key = request.headers["session_key"]
+    user = user_sessions.get(session_key)
+    if not user:
+        return {'message': 'no permissions'}
     with psycopg2.connect(**connection_params) as conn:
         cursor = conn.cursor()
         cursor.execute(
@@ -228,16 +232,60 @@ async def get_content(course_id: str, file_name: str, request: Request):
             (course_id,),
         )
         owner = cursor.fetchone()[0]
-    session_key = request.headers["session_key"]
-    user = user_sessions.get(session_key)
+        cursor.execute(
+            "SELECT link FROM entry where pos = %s",
+            (entry_pos,)
+        )
+        task_link = cursor.fetchone()[0]
+        response = requests.get(
+            url=f"{con.BASE_URL}/repos/{owner}/{course_id}/raw/{task_link}",
+            headers={"Authorization": con.TOKEN},
+        )
+        file_text = response.text
+        cursor.execute(
+            "SELECT link, student_status, grade FROM usertask "
+            "where entry_pos = %s and course_id = %s and user_id = %s",
+            (entry_pos, course_id, user.user_id)
+        )
+        user_task_info = cursor.fetchall()
+        if not user_task_info:
+            cursor.execute(
+                "SELECT login FROM client where id = %s",
+                (user.user_id,)
+            )
+            username = cursor.fetchone()[0]
+            student_link = course_id + '_' + entry_pos
+            response = requests.post(
+                url=f"{con.BASE_URL}/admin/users/{username}/repos",
+                json={
+                    "template": True,
+                    "name": student_link,
+                },
+                headers={
+                    "Authorization": con.TOKEN
+                }
+            )
+            student_status = ""
+            grade = 0
+            if response.status_code == 201:
+                cursor.execute(
+                    "INSERT INTO usertask (user_id, link, "
+                    "student_status, grade, course_id, entry_pos) VALUES "
+                    "(%s, %s, %s, %s, %s, %s)",
+                    (user.user_id, student_link, "", 0, course_id, entry_pos)
+                )
 
-    if not user:
-        return {'message': 'no permissions'}
-    response = requests.get(
-        url=f"{con.BASE_URL}/repos/{owner}/{course_id}/raw/{file_name}",
-        headers={"Authorization": con.TOKEN},
-    )
-    return {"text": response.text}
+        else:
+            student_link, student_status, grade = user_task_info[0]
+        return {
+            "text": file_text,
+            "student_status": student_status,
+            "grade": grade,
+            "student_link": student_link
+        }
+
+
+
 
 # @app.post("/course/<id>/overview")
 # async def root():
