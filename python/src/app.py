@@ -190,6 +190,32 @@ async def user_courses(request: Request):
         return courses
 
 
+@app.post("/course/{course_id}/entries")
+async def get_entries(course_id: str, request: Request):
+    session_key = request.headers["session_key"]
+    user = user_sessions.get(session_key)
+    if not user or user.role != "teacher":
+        return {'message': 'no permissions'}
+    with psycopg2.connect(**connection_params) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT title, type, link, pos FROM entry where course_id = %s",
+            (course_id,)
+        )
+        entries = []
+        for entry_info in cursor.fetchall():
+            print(entry_info)
+            title, entry_type, link, pos = entry_info
+            entries.append(
+                {
+                    "title": title,
+                    "type": entry_type,
+                    "link": link,
+                    "pos": pos
+                }
+            )
+        return entries
+
 # @app.post("/course/<id>/entries")
 # async def root():
 #     return "Fuck you!"
