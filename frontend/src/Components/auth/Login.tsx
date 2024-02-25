@@ -24,8 +24,8 @@ export function Login({ close, setSession }: IAuth) {
       const response = await API.login(user);
       console.log(response);
       if (response.status === 200) {
-        alert("Успешная регистрация");
-        setSession(response.data.session);
+        alert("Успешная авторизация");
+        setSession(response.data.session_key);
         console.log("Login details:", user);
         close();
         setError("");

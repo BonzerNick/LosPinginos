@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { Header } from "./Components/Menu/Header";
 import CourseTabMenu from "./Components/Menu/Course Panel/CorseTabMenu";
 import { EffectSection } from "./Components/EffectSection";
-import { MODAL_STATES } from "./Components/dto/interfaces";
-import { TEST_COURSES } from "./constants";
+import { ICourse, MODAL_STATES } from "./Components/dto/interfaces";
 import { BottomRightButton, Button } from "./Components/Buttons";
 import { Register } from "./Components/auth/Register";
 import { Login } from "./Components/auth/Login";
@@ -68,7 +67,7 @@ function App() {
       {cookies.session && (
         <main className="bg-neutral-300 min-h-screen flex flex-col px-5 text-white">
           <section className="lg:mx-20">
-            <CourseTabMenu courses={TEST_COURSES}></CourseTabMenu>
+            <CourseTabMenu session={cookies.session}></CourseTabMenu>
           </section>
           <BottomRightButton onClick={() => addSomthing()}></BottomRightButton>
         </main>

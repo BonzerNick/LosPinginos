@@ -22,6 +22,14 @@ export const API = {
       });
   },
 
+  async fetchCourses(session: string) {
+    return await instance()
+      .post(`/user/courses`, { session_key: session })
+      .then((responce) => {
+        return responce;
+      });
+  },
+
   async signup(user: RegUser) {
     return await instance()
       .post(`/signup`, user)
