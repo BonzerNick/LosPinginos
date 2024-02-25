@@ -366,8 +366,8 @@ def parse_filename(filename):
 
 def rebuild_entries(course_id, owner, repo):
     response = requests.post(
-        url=f"http://127.0.0.1:4000/api/v1/repos/{owner}/{repo}/contents",
-        headers={"Authorization": "token 3dc7c38c526c10676" "533e1262d6b75c7020a05b9"},
+        url=f"{con.BASE_URL}/repos/{owner}/{repo}/contents",
+        headers={"Authorization": con.TOKEN},
     )
     files = response.json()
     entries = []
