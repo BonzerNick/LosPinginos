@@ -1,43 +1,106 @@
-import logo from "./logo.svg";
 import "./App.css";
-import { Button } from "./Components/Buttons";
-import { useState } from "react";
-import { API } from "./Components/api/api";
+import { useEffect, useState } from "react";
+import { Header } from "./Components/Menu/Header";
+import CourseTabMenu from "./Components/Menu/Course Panel/CorseTabMenu";
+import { EffectSection } from "./Components/EffectSection";
+import { MODAL_STATES } from "./Components/dto/interfaces";
+import { TEST_COURSES } from "./constants";
+import { BottomRightButton, Button } from "./Components/Buttons";
+import { Register } from "./Components/auth/Register";
+import { Login } from "./Components/auth/Login";
+import { useCookies } from "react-cookie";
 
 function App() {
-  const [show, setShow] = useState(false);
-  const [plarform, SetPlatform] = useState("Unknown");
+  const [modalState, setModalState] = useState<MODAL_STATES>(MODAL_STATES.HIDE);
+  const [cookies, setCookie, removeCookie] = useCookies(["session"]);
 
-  const showPlatform = () => {
-    setShow((prev) => !prev);
+  function setSession(session: string) {
+    setCookie("session", session);
+  }
+
+  function removeSession(session: string) {
+    removeCookie("session");
+  }
+
+  const openModal = (title: string, state: MODAL_STATES) => {
+    setModalState(state);
+  };
+  const closeModal = () => {
+    setModalState(MODAL_STATES.HIDE);
   };
 
-  const onClick = async () => {
-    try {
-      const response = await API.getPlatform(10);
-      SetPlatform(response.data);
-    } catch (error) {
-      alert(error);
+  const onAddClick = () => {
+    return console.log("add");
+  };
+
+  const onProfileClick = () => {
+    return console.log("profile");
+  };
+
+  const addSomthing = () => {
+    return console.log("try add something");
+  };
+
+  const getModal = (state: MODAL_STATES) => {
+    switch (state) {
+      case MODAL_STATES.SIGN_UP:
+        return <Login close={closeModal} setSession={setSession}></Login>;
+      case MODAL_STATES.REGISTER:
+        return <Register close={closeModal} setSession={setSession}></Register>;
+      case MODAL_STATES.CONFIRM:
+        return;
+      case MODAL_STATES.CREATE_COURSE:
+        return;
+      case MODAL_STATES.ADD_COURSE:
+        return;
+      default:
+        return <div></div>;
     }
   };
 
   return (
     <div className="App">
-      <header className="p-3 text-center bg-blue-900 text-white text-3xl flex justify-center">
-        <ul className=" flex gap-10 text-sm">
-          {["Aboba1", "Aboba2", "Aboba3", , "Aboba4"].map((value, k) => {
-            return <li key={k}>{value}</li>;
-          })}
-        </ul>
-      </header>
-      <main className="bg-gray-900 min-h-screen flex flex-col items-center justify-center text-white">
-        <img src={logo} className="App-logo" alt="logo" />
-        <section className="flex gap-5 m-5">
-          <Button onClick={showPlatform} title={"Показать платформу"}></Button>
-          <Button onClick={onClick} title={"Узнать платформу"}></Button>
+      <Header
+        addSomething={onAddClick}
+        profileActions={onProfileClick}
+        addTitle="Добавить что-то"
+        profileTitle="Профиль"
+      ></Header>
+      {cookies.session && (
+        <main className="bg-neutral-300 min-h-screen flex flex-col px-5 text-white">
+          <section className="lg:mx-20">
+            <CourseTabMenu courses={TEST_COURSES}></CourseTabMenu>
+          </section>
+          <BottomRightButton onClick={() => addSomthing()}></BottomRightButton>
+        </main>
+      )}
+
+      {!cookies.session && (
+        <section className="flex flex-col justify-center items-center min-h-screen ">
+          <div className="bg-gray-300 p-4 rounded-md shadow-md">
+            <p className="text-lg font-medium text-gray-800">
+              Необходимо авторизоваться
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <button
+                onClick={() => openModal("Hello", MODAL_STATES.REGISTER)}
+                className="w-full py-2 px-4 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
+              >
+                Регистрация
+              </button>
+              <button
+                onClick={() => openModal("Hello", MODAL_STATES.SIGN_UP)}
+                className="w-full py-2 px-4 bg-green-500 text-white rounded-md focus:outline-none hover:bg-green-600"
+              >
+                Авторизация
+              </button>
+            </div>
+          </div>
         </section>
-        {show && <span>{plarform.toString()}</span>}
-      </main>
+      )}
+      <EffectSection open={modalState !== MODAL_STATES.HIDE} close={closeModal}>
+        {getModal(modalState)}
+      </EffectSection>
     </div>
   );
 }
